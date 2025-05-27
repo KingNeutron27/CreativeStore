@@ -16,7 +16,7 @@ function Home() {
   return (
     <>
       <nav>
-        <Link to='/'><h1 className="logo">CreativeStore</h1></Link>
+        <h1 className="logo">CreativeStore</h1>
           <div 
             className="menu-container">
             <IoMenu 

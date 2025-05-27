@@ -8,6 +8,7 @@ nav ul {
   gap: 2rem;
 }
 
+
 .link {
   list-style-type: none;
   text-decoration: none;
@@ -29,6 +30,15 @@ nav ul {
 .menu-container {
   color: #9333ea;
   font-size: 20px;
+  display: none;
+}
+
+/* Add these new CSS classes for proper icon toggling */
+.hamburger-menu {
+  display: block;
+}
+
+.close-menu {
   display: none;
 }
 
@@ -104,6 +114,9 @@ section {
     padding-top: 10px;
     box-shadow: rgba(17, 17, 26, 0.05) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px;
     transition: none;
+    top: 0;
+    left: 0;
+    display: flex;
   }
 
   .link:hover {
@@ -123,4 +136,8 @@ section {
     z-index: 300;
   }
 
+  /* Hide desktop menu on mobile */
+  nav ul:not(.mobile) {
+    display: none;
+  }
 }
