@@ -1,0 +1,126 @@
+nav {
+  display: flex;
+  justify-content: space-between;
+}
+
+nav ul {
+  display: flex;
+  gap: 2rem;
+}
+
+.link {
+  list-style-type: none;
+  text-decoration: none;
+  transition: all 0.5s ease-in;
+}
+
+.link:hover {
+  background-color: #9333ea;
+  padding: 4px;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.logo {
+  font-size: 1.2rem;
+}
+
+.menu-container {
+  color: #9333ea;
+  font-size: 20px;
+  display: none;
+}
+
+.banner {
+  background: linear-gradient(to right, #2563eb, #9333ea);
+  color: white;
+  padding: 10px;
+  text-align: center;
+  min-height: 50vh;
+  max-height: 30vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.banner p {
+  font-size: .85rem;
+}
+
+section {
+  background: #fff;
+  padding-bottom: 1rem;
+}
+
+.shop-btn {
+  background-color: white;
+  color:#2563eb;
+  border-radius: 8px;
+  padding: 8px 12px;
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.shop-btn:hover, .shop-btn:focus {
+  background-color: #e5e7eb;
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.filter {
+  margin-top: 10px;
+}
+
+.filter button {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background-color: rgb(231, 227, 227);
+  border: none;
+  margin-right: 10px;
+  font-size: .7rem;
+  transition: all 0.5s ease-in;
+  cursor: pointer;
+}
+
+.filter button:hover, 
+.filter button:focus, 
+.filter button.active {
+  background-color: #2563eb;
+  color: #fff;
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+@media (max-width: 468px) {
+  .mobile {
+    width: 80%;
+    height: 100vh;
+    z-index: 10;
+    position: absolute;
+    background-color: #fff;
+    flex-direction: column;
+    padding-top: 10px;
+    box-shadow: rgba(17, 17, 26, 0.05) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px;
+    transition: none;
+  }
+
+  .link:hover {
+    background-color: #fff;
+    padding: 0px;
+    color: #9333ea;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .menu-container {
+    display: inline-block;
+    font-size: 25px;
+    position: absolute;
+    right: 10px;
+    top: 50px;
+    z-index: 300;
+  }
+
+}
