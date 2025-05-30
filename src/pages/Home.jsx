@@ -3,14 +3,34 @@ import { IoMenu, IoCloseSharp } from "react-icons/io5";
 import '../css/Home.css'
 import ProductCard from "../components/ProductCard";
 import Footer from "./Footer";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Link } from "react-router-dom";
+import { ShoppingCartContext } from "../Context/ShoppingCartProvider";
+import Spinner from "../components/Spinner";
 
 function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { products, loading } = useContext(ShoppingCartContext)
+  const [isFiltered, setIsFiltered] = useState(false) 
+  const [activeCategory, setactiveCategory] = useState('all')
+  const [filteredProductsList, setFilteredProductsList] = useState([])
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
+  }
+
+  const filteredProducts = (category) => {
+    if (products && products.length > 0) {
+      const filterCategory = products.filter(product => product.category === category)
+      setFilteredProductsList(filterCategory)
+      setactiveCategory(category)
+    }
+    setIsFiltered(true)
+  }
+
+  const showAllProducts = () => {
+    setIsFiltered(false)
+    setactiveCategory('all')
   }
 
   return (
@@ -42,12 +62,44 @@ function Home() {
           </div>
         </div>
         <div className="filter">
-          <button className="active">All products</button>
-          <button>Electronics</button>
-          <button>Fashion</button>
-            <button>Accessories</button>
+          <button 
+            onClick={showAllProducts}
+            className={activeCategory === 'all' ? 'ative' : ''}>All products
+          </button>
+          <button 
+            className={activeCategory === 'beauty' ? 'ative' : ''}
+            onClick={() => filteredProducts('beauty')}>Beauty
+          </button>
+          <button 
+            className={activeCategory === 'groceries' ? 'ative' : ''}
+            onClick={() => filteredProducts('groceries')}>Groceries
+          </button>
+          <button 
+            className={activeCategory === 'fragrances' ? 'ative' : ''}
+            onClick={() => filteredProducts('fragrances')}>Fragrance
+          </button>
+          <button 
+            className={activeCategory === 'furniture' ? 'ative' : ''}
+            onClick={() => filteredProducts('furniture')}>Furniture
+          </button>
         </div>
-       <ProductCard />
+        <section className='product-container'>
+          {
+           loading 
+            ? (<Spinner loading={loading}/>)
+            : (isFiltered ? (
+            filteredProductsList && filteredProductsList.length > 0
+              ? (filteredProductsList.map(filteredItem => <ProductCard key={filteredItem} product={filteredItem}/>))
+              : <p>No Filtered item Found</p>
+           )
+           : (
+              products && products.length > 0
+              ? (products.map(product => <ProductCard key={product.id} product={product}/>))
+              : <p>No Product found</p>
+           ))
+          }
+        </section>
+        
       </section>
       <Footer />
     </>
