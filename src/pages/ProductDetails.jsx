@@ -1,77 +1,130 @@
-import React from 'react';
 import '../css/ProductDetails.css';
+import NavBar from '../components/NavBar';
+import { useParams } from 'react-router-dom';
+import { useEffect, useContext } from 'react';
+import Spinner from '../components/Spinner';
+import { ShoppingCartContext } from '../Context/ShoppingCartProvider';
+import { BiSolidError } from "react-icons/bi";
 
-function ProductDetails({ product }) {
-  return (
+function ProductDetails() {
+  const { id } = useParams()
+  const {error, setError, loading, setLoading, productItem, setProductItem, handleAddToCart} = useContext(ShoppingCartContext)
+  const ProductDetailsData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fetch(`https://dummyjson.com/products/${id}`);
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch Product');
+      }
+
+      const result = await response.json();
+
+      if (result && result.id) {
+        setProductItem(result);
+      }
+    } catch (error) {
+      console.error(error);
+      setError('Trouble fetching the data');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  useEffect(() => {
+    if (id) {
+      ProductDetailsData();
+    }
+  }, [id]);
+
+  if (loading) {
+    return (
+      <>
+        <NavBar />
+        <Spinner />
+      </>
+    );
+  }
+
+  if (error) {
+    return (
+      <>
+        <NavBar />
+        <div className='error'> 
+          <BiSolidError className='error-icon'/>
+          <p className='error-message'><span>Error:</span>{error}</p>
+        </div>
+      </> 
+    );
+  }
+
+  if (!productItem) {
+    return (
+      <>
+        <NavBar />
+        <p>No Product Found</p>
+      </>
+    );
+  }
+
+  console.log(productItem);
+
+  const discountPercentage = productItem.discountPercentage || 0;
+  const originalPrice = discountPercentage > 0 && discountPercentage < 100 
+    ? (productItem.price / (1 - discountPercentage / 100)).toFixed(2)
+    : (productItem.price * 1.2).toFixed(2); // Default 20% markup if no valid discount
+
+  const savings = (originalPrice - productItem.price).toFixed(2);
+  const reviewCount = productItem.reviews ? productItem.reviews.length : 0;
+
+  return ( 
     <>
-      <header className="header">
-        <nav className="nav">
-          <h1 className="logo">CreativeStore</h1>
-          <div>
-            <a href="#" style={{ color: 'white', textDecoration: 'none', marginRight: '1rem' }}>Home</a>
-            <a href="#" style={{ color: 'white', textDecoration: 'none', marginRight: '1rem' }}>Products</a>
-            <a href="#" style={{ color: 'white', textDecoration: 'none' }}>Cart</a>
-          </div>
-        </nav>
-      </header>
-
+      <NavBar />
       <div className="container">
-        {/* Breadcrumb */}
-        <nav className="breadcrumb">
-          <a href="#">Home</a> /
-          <a href="#">Beauty</a> /
-          <span>Essence Mascara Lash Princess</span>
-        </nav>
-
         {/* Main Product Details */}
         <section className="product-details">
           <div className="product-main">
             {/* Image Gallery */}
             <div className="image-gallery">
               <div className="main-image">
-                <img src="https://cdn.dummyjson.com/products/images/beauty/Essence%20Mascara%20Lash%20Princess/1.png" alt="Essence Mascara Lash Princess" id="mainImage" />
-                <div className="discount-badge">18.7% OFF</div>
+                <img src={productItem.thumbnail} alt={productItem.title} id="mainImage" />
+                <div className="discount-badge">{discountPercentage.toFixed(1)}% OFF</div>
               </div>
               <div className="thumbnail-gallery">
-                <div className="thumbnail active" onClick={() => {}}>
-                  <img src="https://cdn.dummyjson.com/products/images/beauty/Essence%20Mascara%20Lash%20Princess/1.png" alt="Thumbnail 1" />
-                </div>
-                <div className="thumbnail" onClick={() => {}}>
-                  <img src="https://cdn.dummyjson.com/products/images/beauty/Essence%20Mascara%20Lash%20Princess/2.png" alt="Thumbnail 2" />
-                </div>
-                <div className="thumbnail" onClick={() => {}}>
-                  <img src="https://cdn.dummyjson.com/products/images/beauty/Essence%20Mascara%20Lash%20Princess/3.png" alt="Thumbnail 3" />
-                </div>
+                {productItem.images && productItem.images.map((productPicture, i) => (
+                  <div className="thumbnail" key={i} onClick={() => {}}>
+                    <img src={productPicture} alt={`${productItem.title} view ${i + 1}`} />
+                  </div>
+                ))}
               </div>
             </div>
 
             {/* Product Info */}
             <div className="product-info">
-              <div className="product-category">Beauty</div>
-              <h1 className="product-title">Essence Mascara Lash Princess</h1>
+              <div className="product-category">{productItem.category}</div>
+              <h1 className="product-title">{productItem.title}</h1>
               
               <div className="rating-section">
                 <div className="stars">
-                  ⭐ 4.94
+                  ⭐ {productItem.rating}
                 </div>
-                <span className="rating-count">(152 reviews)</span>
+                <span className="rating-count">({reviewCount} reviews)</span>
               </div>
 
               <div className="price-section">
-                <span className="current-price">$9.99</span>
-                <span className="original-price">$12.29</span>
-                <span className="savings">Save $2.30</span>
+                <span className="current-price">${productItem.price}</span>
+                <span className="original-price">${originalPrice}</span>
+                <span className="savings">Save ${savings}</span>
               </div>
 
               <div className="stock-status">
                 <div className="stock-indicator"></div>
-                <span className="stock-text">In Stock (5 remaining)</span>
+                <span className="stock-text">In Stock ({productItem.stock} remaining)</span>
               </div>
 
               <p className="product-description">
-                The Essence Mascara Lash Princess is a popular mascara known for its volumizing and lengthening effects. 
-                Achieve dramatic lashes with this long-lasting, smudge-proof formula that separates and defines each lash 
-                for a bold, beautiful look.
+                {productItem.description}
               </p>
 
               <div className="action-section">
@@ -85,7 +138,9 @@ function ProductDetails({ product }) {
                 </div>
 
                 <div className="action-buttons">
-                  <button className="btn btn-primary">Add to Cart</button>
+                  <button 
+                    onClick={() => handleAddToCart(productItem)}
+                    className="btn btn-primary">Add to Cart</button>
                   <button className="btn btn-secondary">Buy Now</button>
                 </div>
               </div>
@@ -99,27 +154,32 @@ function ProductDetails({ product }) {
           <div className="spec-grid">
             <div className="spec-item">
               <span className="spec-label">Brand</span>
-              <span className="spec-value">Essence</span>
+              <span className="spec-value">{productItem.brand || 'N/A'}</span>
             </div>
             <div className="spec-item">
               <span className="spec-label">Category</span>
-              <span className="spec-value">Beauty</span>
+              <span className="spec-value">{productItem.category}</span>
             </div>
             <div className="spec-item">
               <span className="spec-label">Weight</span>
-              <span className="spec-value">15ml</span>
+              <span className="spec-value">{productItem.weight || 'N/A'}kg</span>
             </div>
             <div className="spec-item">
               <span className="spec-label">Dimensions</span>
-              <span className="spec-value">12 x 2 x 2 cm</span>
+              <span className="spec-value">
+                {productItem.dimensions 
+                  ? `${productItem.dimensions.width.toFixed(0)} x ${productItem.dimensions.height.toFixed(0)} x ${productItem.dimensions.depth.toFixed(0)}cm`
+                  : 'N/A'
+                }
+              </span>
             </div>
             <div className="spec-item">
               <span className="spec-label">SKU</span>
-              <span className="spec-value">ESS-MLC-001</span>
+              <span className="spec-value">{productItem.sku || 'N/A'}</span>
             </div>
             <div className="spec-item">
               <span className="spec-label">Warranty</span>
-              <span className="spec-value">1 Year</span>
+              <span className="spec-value">{productItem.warrantyInformation || 'N/A'}</span>
             </div>
           </div>
         </section>
@@ -131,47 +191,24 @@ function ProductDetails({ product }) {
             <button className="btn btn-secondary" style={{ flex: 'none', padding: '0.5rem 1rem' }}>Write a Review</button>
           </div>
 
-          <div className="review-item">
-            <div className="review-header">
-              <span className="reviewer-name">Sarah Johnson</span>
-              <span className="review-date">March 15, 2024</span>
-            </div>
-            <div className="review-rating">
-              <span>⭐⭐⭐⭐⭐</span>
-            </div>
-            <p className="review-text">
-              Amazing mascara! It really does give you princess lashes. The formula is perfect - not too wet, not too dry. 
-              It separates each lash beautifully and gives incredible volume without clumping.
-            </p>
-          </div>
-
-          <div className="review-item">
-            <div className="review-header">
-              <span className="reviewer-name">Emily Davis</span>
-              <span className="review-date">March 10, 2024</span>
-            </div>
-            <div className="review-rating">
-              <span>⭐⭐⭐⭐⭐</span>
-            </div>
-            <p className="review-text">
-              Best drugstore mascara I've ever used! The brush is perfect for getting every single lash, 
-              and it doesn't flake or smudge throughout the day. Highly recommend!
-            </p>
-          </div>
-
-          <div className="review-item">
-            <div className="review-header">
-              <span className="reviewer-name">Jessica Wilson</span>
-              <span className="review-date">March 5, 2024</span>
-            </div>
-            <div className="review-rating">
-              <span>⭐⭐⭐⭐⭐</span>
-            </div>
-            <p className="review-text">
-              This mascara is incredible for the price! It gives me the dramatic lashes I want without 
-              breaking the bank. The staying power is excellent too.
-            </p>
-          </div>
+          {productItem.reviews && productItem.reviews.length > 0 ? (
+            productItem.reviews.map((productReview, index) => (
+              <div className="review-item" key={index}>
+                <div className="review-header">
+                  <span className="reviewer-name">{productReview.reviewerName}</span>
+                  <span className="review-date">{new Date(productReview.date).toLocaleDateString()}</span>
+                </div>
+                <div className="review-rating">
+                  <span>{'⭐'.repeat(Math.floor(productReview.rating))} ({productReview.rating})</span>
+                </div>
+                <p className="review-text">
+                  {productReview.comment}
+                </p>
+              </div>
+            ))
+          ) : (
+            <p>No reviews available for this product.</p>
+          )}
         </section>
       </div>
     </>

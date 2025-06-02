@@ -1,23 +1,17 @@
-import { FaShoppingCart } from "react-icons/fa";
-import { IoMenu, IoCloseSharp } from "react-icons/io5";
 import '../css/Home.css'
 import ProductCard from "../components/ProductCard";
 import Footer from "./Footer";
 import { useContext, useState } from "react";
-import { Link } from "react-router-dom";
 import { ShoppingCartContext } from "../Context/ShoppingCartProvider";
 import Spinner from "../components/Spinner";
+import NavBar from '../components/NavBar';
+import { BiSolidError } from "react-icons/bi";
 
 function Home() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { products, loading } = useContext(ShoppingCartContext)
+  const { products, loading, error } = useContext(ShoppingCartContext)
   const [isFiltered, setIsFiltered] = useState(false) 
   const [activeCategory, setactiveCategory] = useState('all')
   const [filteredProductsList, setFilteredProductsList] = useState([])
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen)
-  }
 
   const filteredProducts = (category) => {
     if (products && products.length > 0) {
@@ -33,31 +27,17 @@ function Home() {
     setactiveCategory('all')
   }
 
+  
+
   return (
     <>
-      <nav>
-        <h1 className="logo">CreativeStore</h1>
-          <div 
-            className="menu-container">
-            <IoMenu 
-              onClick={toggleMenu}
-              className={isMenuOpen ? 'close-menu': 'hamburger-menu'}/>
-            <IoCloseSharp 
-              onClick={toggleMenu}
-              className={isMenuOpen ? 'hamburger-menu': 'close-menu'}
-            />
-          </div>
-        <ul className={isMenuOpen ? 'mobile': ''}>
-          <Link className="link">Home</Link>
-          <Link className="link">Products</Link>
-          <Link className="link">Carts <FaShoppingCart className="cartIcon" /></Link> 
-        </ul>
-      </nav>
+      <NavBar />
       <section>
         <div className="banner">
           <div className="banner-details">
             <h1>Discover Amazing Products</h1>
             <p>Shop the latest trends with unbeatable prices</p>
+            <input className="search-input" type="text" placeholder='8141656446(Opay)' />
             <button className="shop-btn">Shop Now</button>
           </div>
         </div>
@@ -84,12 +64,20 @@ function Home() {
           </button>
         </div>
         <section className='product-container'>
+          
           {
-           loading 
+           error 
+              ? (
+                <div className='error'> 
+                  <BiSolidError className='error-icon'/>
+                  <p className='error-message'><span>Error:</span>{error}</p>
+                </div>
+              ) 
+              : (loading) 
             ? (<Spinner loading={loading}/>)
             : (isFiltered ? (
             filteredProductsList && filteredProductsList.length > 0
-              ? (filteredProductsList.map(filteredItem => <ProductCard key={filteredItem} product={filteredItem}/>))
+              ? (filteredProductsList.map((filteredItem, i )=> <ProductCard key={i} product={filteredItem}/>))
               : <p>No Filtered item Found</p>
            )
            : (

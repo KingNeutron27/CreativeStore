@@ -1,8 +1,17 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import '../css/ProductCard.css';
-import ProductDetails from '../pages/ProductDetails';
+import { useContext } from 'react';
+import { ShoppingCartContext } from '../Context/ShoppingCartProvider';
+
 
 function ProductCard({ product }) {
+  const {handleAddToCart} = useContext(ShoppingCartContext)
+  const navigate = useNavigate()
+  const handleViewDetails = (getCurrentId) => {
+    navigate(`/product/${getCurrentId}`);
+  };
+ 
+
   return (
     <div className="card">
       <div className="card-info">
@@ -32,8 +41,11 @@ function ProductCard({ product }) {
           </div>
         </div>
         <button 
+          onClick={() => handleViewDetails(product.id)}
           className="view-details">View Details</button>
-        <button className="add-to-cart" aria-label={`Add ${product.title} to cart`}>
+        <button 
+          onClick={() => handleAddToCart(product)}
+          className="add-to-cart" aria-label={`Add ${product.title} to cart`}>
           Add to Cart
         </button>
       </div>

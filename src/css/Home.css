@@ -8,19 +8,23 @@ nav ul {
   gap: 2rem;
 }
 
-
 .link {
   list-style-type: none;
   text-decoration: none;
-  transition: all 0.5s ease-in;
+  position: relative;
+  transition: all 0.3s ease;
+  cursor: pointer;
 }
 
-.link:hover {
-  background-color: #9333ea;
-  padding: 4px;
-  color: white;
-  border-radius: 5px;
-  cursor: pointer;
+.link::after {
+  content: '';
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #9333ea, #2563eb);
+  transition: width 0.3s ease;
 }
 
 .logo {
@@ -63,6 +67,43 @@ section {
   padding-bottom: 1rem;
 }
 
+.search-input {
+  width: 80%;
+  padding: 5px;
+  border: none;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+.search-input::placeholder {
+  font-size: 14px;
+  font-family: 'Quicksand', sans-serif;
+}
+
+.error {
+  box-shadow: rgba(17, 17, 26, 0.1) 0px 0px 16px;
+  margin: 0 auto;
+  height: 50vh;
+  width: 80%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.error-icon {
+  color: #2563eb;
+  font-size: 8rem;
+}
+
+.error-message span {
+  color:#9333ea;
+}
+
+.error-message {
+  color: #9333ea;
+}
+
 .shop-btn {
   background-color: white;
   color:#2563eb;
@@ -71,6 +112,8 @@ section {
   border: none;
   font-size: 12px;
   cursor: pointer;
+  display: block;
+  margin: 10px auto;
 }
 
 .shop-btn:hover, .shop-btn:focus {
@@ -80,7 +123,7 @@ section {
 }
 
 .filter {
-  margin-top: 10px;
+  margin-top: 10px; 
 }
 
 .filter button {
@@ -103,6 +146,7 @@ section {
   outline-offset: 2px;
 }
 
+/* Mobile styles */
 @media (max-width: 468px) {
   .mobile {
     width: 80%;
@@ -111,7 +155,8 @@ section {
     position: absolute;
     background-color: #fff;
     flex-direction: column;
-    padding-top: 10px;
+    padding-top: 30px;
+    padding-left: 15px;
     box-shadow: rgba(17, 17, 26, 0.05) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px;
     transition: none;
     top: 0;
@@ -119,25 +164,43 @@ section {
     display: flex;
   }
 
-  .link:hover {
-    background-color: #fff;
-    padding: 0px;
-    color: #9333ea;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-
   .menu-container {
     display: inline-block;
     font-size: 25px;
     position: absolute;
     right: 10px;
-    top: 50px;
+    top: 38px;
     z-index: 300;
   }
 
   /* Hide desktop menu on mobile */
   nav ul:not(.mobile) {
     display: none;
+  }
+
+  /* Remove hover effects on mobile */
+  .link::after {
+    display: none;
+  }
+  
+  .link:hover {
+    color: inherit;
+  }
+
+  .filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+}
+
+/* Desktop hover effects - only apply on non-mobile screens */
+@media (min-width: 469px) and (hover: hover) {
+  .link:hover::after {
+    width: 100%;
+  }
+
+  .link:hover {
+    color: #9333ea;
   }
 }
