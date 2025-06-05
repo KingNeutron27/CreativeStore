@@ -61,6 +61,7 @@ function Home() {
     if (searchInput && searchInput.trim()) {
       searchQuery(searchInput)
     }
+    setSearchInput('')
   }
 
   const showAllProducts = () => {
