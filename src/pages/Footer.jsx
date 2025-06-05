@@ -41,7 +41,7 @@ function Footer() {
             </button>
             <h3>Contact Information</h3>
             <div className="contact-info">
-              <p><strong>Name:</strong> John Doe</p>
+              <p><strong>Name:</strong>Esedebe Kingsley</p>
               <p><strong>Bank:</strong> Opay Bank</p>
               <p><strong>Account Number:</strong> 8141656446</p>
             </div>
