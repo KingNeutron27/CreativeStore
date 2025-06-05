@@ -101,8 +101,8 @@ function Home() {
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
               />
+            <button className="shop-btn">Search</button>
             </form>
-            <button className="shop-btn">Shop Now</button>
           </div>
         </div>
         
