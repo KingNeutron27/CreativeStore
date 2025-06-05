@@ -39,10 +39,20 @@ nav ul {
 }
 
 .logo {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: bold;
   color: #2563eb;
   margin: 0;
+}
+.logo-container {
+  width: 120px;
+  display: flex;
+  place-items: center;
+  gap: 5px;
+}
+
+.logo-image {
+  width: 40%
 }
 
 .menu-container {
@@ -337,6 +347,15 @@ section {
 
 /* Very small screens */
 @media (max-width: 480px) {
+  .logo {
+    font-size: 1.2rem !important;
+    color: #2563eb;
+  }
+
+  .logo-image {
+    width: 25%
+  }
+
   .banner-details h1 {
     font-size: 1.5rem;
   }

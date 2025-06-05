@@ -1,12 +1,14 @@
 import { useContext, useState, useEffect } from 'react';
 import { FaShoppingCart } from "react-icons/fa";
 import { IoMenu, IoCloseSharp } from "react-icons/io5";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ShoppingCartContext } from '../Context/ShoppingCartProvider';
+import CreativeStore from '../asssets/CreativeStore.png'
 
 function NavBar() {
   const { itemCount } = useContext(ShoppingCartContext);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate()
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -45,7 +47,14 @@ function NavBar() {
 
   return (
     <nav>
-      <h1 className="logo">CreativeStore</h1>
+      <div className="logo-container">
+        <img 
+          src={CreativeStore} 
+          alt="Creative Store Logo" 
+          className="logo-image"
+        />
+        <h1 className='logo'>CreativeStore</h1>
+      </div>
       
       <div className="menu-container" onClick={toggleMenu}>
         <IoMenu 
