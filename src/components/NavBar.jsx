@@ -1,34 +1,78 @@
-import '../css/Home.css'
-import { useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { FaShoppingCart } from "react-icons/fa";
 import { IoMenu, IoCloseSharp } from "react-icons/io5";
 import { Link } from "react-router-dom";
+import { ShoppingCartContext } from '../Context/ShoppingCartProvider';
 
 function NavBar() {
+  const { itemCount } = useContext(ShoppingCartContext);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const toggleMenu = () => {
-      setIsMenuOpen(!isMenuOpen)
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isMenuOpen && !event.target.closest('nav')) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMenuOpen]);
+
+  // Prevent body scroll when menu is open
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
     }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMenuOpen]);
+
   return (
     <nav>
-        <h1 className="logo">CreativeStore</h1>
-          <div 
-            className="menu-container">
-            <IoMenu 
-              onClick={toggleMenu}
-              className={isMenuOpen ? 'close-menu': 'hamburger-menu'}/>
-            <IoCloseSharp 
-              onClick={toggleMenu}
-              className={isMenuOpen ? 'hamburger-menu': 'close-menu'}
-            />
-          </div>
-        <ul className={isMenuOpen ? 'mobile': ''}>
-          <Link to={'/'} className="link">Home</Link>
-          <Link to={'/product/:1'} className="link">Products</Link>
-          <Link to={'cart'} className="link">Carts <FaShoppingCart className="cartIcon" /></Link> 
-        </ul>
-      </nav> 
-  )
+      <h1 className="logo">CreativeStore</h1>
+      
+      <div className="menu-container" onClick={toggleMenu}>
+        <IoMenu 
+          className={isMenuOpen ? 'close-menu' : 'hamburger-menu'}
+        />
+        <IoCloseSharp 
+          className={isMenuOpen ? 'hamburger-menu' : 'close-menu'}
+        />
+      </div>
+
+      <ul className={isMenuOpen ? 'mobile' : ''}>
+        <Link to={'/'} className="link" onClick={closeMenu}>
+          Home
+        </Link>
+        <Link to={'/about'} className="link" onClick={closeMenu}>
+          About
+        </Link>
+        <Link to={'/cart'} className="link" onClick={closeMenu}>
+          Cart
+          <FaShoppingCart className="cartIcon" />
+          {itemCount > 0 && (
+            <div className="cart-quantity">{itemCount}</div>
+          )}
+        </Link>
+      </ul>
+    </nav>
+  );
 }
 
-export default NavBar
+export default NavBar;

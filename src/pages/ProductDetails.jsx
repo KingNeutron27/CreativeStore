@@ -1,15 +1,21 @@
 import '../css/ProductDetails.css';
 import NavBar from '../components/NavBar';
 import { useParams } from 'react-router-dom';
-import { useEffect, useContext } from 'react';
+import { useEffect, useContext, useState, useCallback } from 'react';
 import Spinner from '../components/Spinner';
 import { ShoppingCartContext } from '../Context/ShoppingCartProvider';
 import { BiSolidError } from "react-icons/bi";
 
 function ProductDetails() {
   const { id } = useParams()
-  const {error, setError, loading, setLoading, productItem, setProductItem, handleAddToCart} = useContext(ShoppingCartContext)
-  const ProductDetailsData = async () => {
+  const {error, setError, loading, setLoading, productItem, setProductItem, handleAddToCart, cartItems} = useContext(ShoppingCartContext)
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  
+  // Safe check for isInCart - only check if productItem exists
+  const isInCart = productItem ? cartItems.some(item => item.id === productItem.id) : false;
+  
+  // Memoize the fetch function to avoid unnecessary re-renders
+  const ProductDetailsData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -30,13 +36,18 @@ function ProductDetails() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, setLoading, setError, setProductItem]);
   
   useEffect(() => {
     if (id) {
       ProductDetailsData();
     }
-  }, [id]);
+  }, [id, ProductDetailsData]);
+
+  // Handle thumbnail click to change main image
+  const handleThumbnailClick = (index) => {
+    setSelectedImageIndex(index);
+  };
 
   if (loading) {
     return (
@@ -68,7 +79,7 @@ function ProductDetails() {
     );
   }
 
-  console.log(productItem);
+  // console.log(productItem);
 
   const discountPercentage = productItem.discountPercentage || 0;
   const originalPrice = discountPercentage > 0 && discountPercentage < 100 
@@ -77,6 +88,11 @@ function ProductDetails() {
 
   const savings = (originalPrice - productItem.price).toFixed(2);
   const reviewCount = productItem.reviews ? productItem.reviews.length : 0;
+
+  // Get the current main image (either selected thumbnail or default thumbnail)
+  const mainImageSrc = productItem.images && productItem.images[selectedImageIndex] 
+    ? productItem.images[selectedImageIndex] 
+    : productItem.thumbnail;
 
   return ( 
     <>
@@ -88,12 +104,19 @@ function ProductDetails() {
             {/* Image Gallery */}
             <div className="image-gallery">
               <div className="main-image">
-                <img src={productItem.thumbnail} alt={productItem.title} id="mainImage" />
-                <div className="discount-badge">{discountPercentage.toFixed(1)}% OFF</div>
+                <img src={mainImageSrc} alt={productItem.title} id="mainImage" />
+                {discountPercentage > 0 && (
+                  <div className="discount-badge">{discountPercentage.toFixed(1)}% OFF</div>
+                )}
               </div>
               <div className="thumbnail-gallery">
                 {productItem.images && productItem.images.map((productPicture, i) => (
-                  <div className="thumbnail" key={i} onClick={() => {}}>
+                  <div 
+                    className={`thumbnail ${i === selectedImageIndex ? 'active' : ''}`} 
+                    key={i} 
+                    onClick={() => handleThumbnailClick(i)}
+                    style={{ cursor: 'pointer' }}
+                  >
                     <img src={productPicture} alt={`${productItem.title} view ${i + 1}`} />
                   </div>
                 ))}
@@ -114,13 +137,22 @@ function ProductDetails() {
 
               <div className="price-section">
                 <span className="current-price">${productItem.price}</span>
-                <span className="original-price">${originalPrice}</span>
-                <span className="savings">Save ${savings}</span>
+                {discountPercentage > 0 && (
+                  <>
+                    <span className="original-price">${originalPrice}</span>
+                    <span className="savings">Save ${savings}</span>
+                  </>
+                )}
               </div>
 
               <div className="stock-status">
                 <div className="stock-indicator"></div>
-                <span className="stock-text">In Stock ({productItem.stock} remaining)</span>
+                <span className="stock-text">
+                  {productItem.stock > 0 
+                    ? `In Stock (${productItem.stock} remaining)` 
+                    : 'Out of Stock'
+                  }
+                </span>
               </div>
 
               <p className="product-description">
@@ -128,20 +160,26 @@ function ProductDetails() {
               </p>
 
               <div className="action-section">
-                <div className="quantity-selector">
-                  <span className="quantity-label">Quantity:</span>
-                  <div className="quantity-controls">
-                    <button className="quantity-btn" onClick={() => {}}>-</button>
-                    <input type="number" className="quantity-input" defaultValue="1" min="1" max="5" id="quantity" />
-                    <button className="quantity-btn" onClick={() => {}}>+</button>
-                  </div>
-                </div>
-
                 <div className="action-buttons">
                   <button 
+                    disabled={isInCart || productItem.stock === 0}
                     onClick={() => handleAddToCart(productItem)}
-                    className="btn btn-primary">Add to Cart</button>
-                  <button className="btn btn-secondary">Buy Now</button>
+                    className={`btn btn-primary${(isInCart || productItem.stock === 0) ? 'disabled' : ''}`}
+                    aria-label={`Add ${productItem.title} to cart`}
+                  >
+                    {productItem.stock === 0 
+                      ? 'Out of Stock' 
+                      : isInCart 
+                        ? 'In Cart' 
+                        : 'Add to Cart'
+                    }
+                  </button>
+                  <button 
+                    className="btn btn-secondary"
+                    disabled={productItem.stock === 0}
+                  >
+                    Buy Now
+                  </button>
                 </div>
               </div>
             </div>
@@ -162,7 +200,7 @@ function ProductDetails() {
             </div>
             <div className="spec-item">
               <span className="spec-label">Weight</span>
-              <span className="spec-value">{productItem.weight || 'N/A'}kg</span>
+              <span className="spec-value">{productItem.weight ? `${productItem.weight}kg` : 'N/A'}</span>
             </div>
             <div className="spec-item">
               <span className="spec-label">Dimensions</span>
@@ -188,7 +226,9 @@ function ProductDetails() {
         <section className="reviews">
           <div className="reviews-header">
             <h2 className="spec-title">Customer Reviews</h2>
-            <button className="btn btn-secondary" style={{ flex: 'none', padding: '0.5rem 1rem' }}>Write a Review</button>
+            <button className="btn btn-secondary" style={{ flex: 'none', padding: '0.5rem 1rem' }}>
+              Write a Review
+            </button>
           </div>
 
           {productItem.reviews && productItem.reviews.length > 0 ? (
@@ -196,10 +236,14 @@ function ProductDetails() {
               <div className="review-item" key={index}>
                 <div className="review-header">
                   <span className="reviewer-name">{productReview.reviewerName}</span>
-                  <span className="review-date">{new Date(productReview.date).toLocaleDateString()}</span>
+                  <span className="review-date">
+                    {new Date(productReview.date).toLocaleDateString()}
+                  </span>
                 </div>
                 <div className="review-rating">
-                  <span>{'⭐'.repeat(Math.floor(productReview.rating))} ({productReview.rating})</span>
+                  <span>
+                    {'⭐'.repeat(Math.floor(productReview.rating))} ({productReview.rating})
+                  </span>
                 </div>
                 <p className="review-text">
                   {productReview.comment}

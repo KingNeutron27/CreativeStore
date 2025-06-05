@@ -5,8 +5,9 @@ import { ShoppingCartContext } from '../Context/ShoppingCartProvider';
 
 
 function ProductCard({ product }) {
-  const {handleAddToCart} = useContext(ShoppingCartContext)
+  const {handleAddToCart, cartItems} = useContext(ShoppingCartContext)
   const navigate = useNavigate()
+  const isInCart = cartItems.some(item => item.id === product.id);
   const handleViewDetails = (getCurrentId) => {
     navigate(`/product/${getCurrentId}`);
   };
@@ -40,13 +41,19 @@ function ProductCard({ product }) {
             )}
           </div>
         </div>
-        <button 
+         <button 
           onClick={() => handleViewDetails(product.id)}
-          className="view-details">View Details</button>
-        <button 
+          className="view-details"
+        >
+          View Details
+        </button>
+        <button
+          disabled={isInCart}
           onClick={() => handleAddToCart(product)}
-          className="add-to-cart" aria-label={`Add ${product.title} to cart`}>
-          Add to Cart
+          className={`add-to-cart ${isInCart ? 'disabled' : ''}`}
+          aria-label={`Add ${product.title} to cart`}
+        >
+          {isInCart ? 'In Cart' : 'Add to Cart'}
         </button>
       </div>
     </div>

@@ -10,24 +10,79 @@ import { BiSolidError } from "react-icons/bi";
 function Home() {
   const { products, loading, error } = useContext(ShoppingCartContext)
   const [isFiltered, setIsFiltered] = useState(false) 
-  const [activeCategory, setactiveCategory] = useState('all')
+  const [activeCategory, setActiveCategory] = useState('all')
   const [filteredProductsList, setFilteredProductsList] = useState([])
+  const [searchInput, setSearchInput] = useState('') 
+  const [searchResults, setSearchResults] = useState([])
+  const [isSearching, setIsSearching] = useState(false)
 
   const filteredProducts = (category) => {
     if (products && products.length > 0) {
       const filterCategory = products.filter(product => product.category === category)
       setFilteredProductsList(filterCategory)
-      setactiveCategory(category)
+      setActiveCategory(category)
     }
     setIsFiltered(true)
+    // Clear search when filtering by category
+    setSearchResults([])
+    setIsSearching(false)
+  }
+
+  const searchQuery = async (query) => {
+    if (!query || !query.trim()) {
+      setSearchResults([])
+      setIsSearching(false)
+      return
+    }
+
+    try {
+      const response = await fetch(`https://dummyjson.com/products/search?q=${query}`)
+      const result = await response.json()
+      
+      if (result && result.products) {
+        setSearchResults(result.products)
+        setIsSearching(true)
+        // Clear category filtering when searching
+        setIsFiltered(false)
+        setActiveCategory('all')
+      } else {
+        setSearchResults([])
+        setIsSearching(true)
+      }
+    } catch (error) {
+      console.error('Search error:', error)
+      setSearchResults([])
+      setIsSearching(false)
+    }
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (searchInput && searchInput.trim()) {
+      searchQuery(searchInput)
+    }
   }
 
   const showAllProducts = () => {
     setIsFiltered(false)
-    setactiveCategory('all')
+    setActiveCategory('all')
+    setSearchResults([])
+    setIsSearching(false)
+    setSearchInput('')
   }
 
-  
+  // Determine which products to display
+  const getProductsToDisplay = () => {
+    if (isSearching) {
+      return searchResults
+    } else if (isFiltered) {
+      return filteredProductsList
+    } else {
+      return products
+    }
+  }
+
+  const productsToShow = getProductsToDisplay()
 
   return (
     <>
@@ -37,57 +92,77 @@ function Home() {
           <div className="banner-details">
             <h1>Discover Amazing Products</h1>
             <p>Shop the latest trends with unbeatable prices</p>
-            <input className="search-input" type="text" placeholder='8141656446(Opay)' />
+            <form onSubmit={handleSubmit}>
+              <input 
+                className="search-input" 
+                type="text" 
+                placeholder='Search products...' 
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+              />
+            </form>
             <button className="shop-btn">Shop Now</button>
           </div>
         </div>
+        
         <div className="filter">
           <button 
             onClick={showAllProducts}
-            className={activeCategory === 'all' ? 'ative' : ''}>All products
+            className={activeCategory === 'all' && !isSearching ? 'active' : ''}>
+            All products
           </button>
           <button 
-            className={activeCategory === 'beauty' ? 'ative' : ''}
-            onClick={() => filteredProducts('beauty')}>Beauty
+            className={activeCategory === 'beauty' && !isSearching ? 'active' : ''}
+            onClick={() => filteredProducts('beauty')}>
+            Beauty
           </button>
           <button 
-            className={activeCategory === 'groceries' ? 'ative' : ''}
-            onClick={() => filteredProducts('groceries')}>Groceries
+            className={activeCategory === 'groceries' && !isSearching ? 'active' : ''}
+            onClick={() => filteredProducts('groceries')}>
+            Groceries
           </button>
           <button 
-            className={activeCategory === 'fragrances' ? 'ative' : ''}
-            onClick={() => filteredProducts('fragrances')}>Fragrance
+            className={activeCategory === 'fragrances' && !isSearching ? 'active' : ''}
+            onClick={() => filteredProducts('fragrances')}>
+            Fragrance
           </button>
           <button 
-            className={activeCategory === 'furniture' ? 'ative' : ''}
-            onClick={() => filteredProducts('furniture')}>Furniture
+            className={activeCategory === 'furniture' && !isSearching ? 'active' : ''}
+            onClick={() => filteredProducts('furniture')}>
+            Furniture
           </button>
         </div>
-        <section className='product-container'>
-          
-          {
-           error 
-              ? (
-                <div className='error'> 
-                  <BiSolidError className='error-icon'/>
-                  <p className='error-message'><span>Error:</span>{error}</p>
-                </div>
-              ) 
-              : (loading) 
-            ? (<Spinner loading={loading}/>)
-            : (isFiltered ? (
-            filteredProductsList && filteredProductsList.length > 0
-              ? (filteredProductsList.map((filteredItem, i )=> <ProductCard key={i} product={filteredItem}/>))
-              : <p>No Filtered item Found</p>
-           )
-           : (
-              products && products.length > 0
-              ? (products.map(product => <ProductCard key={product.id} product={product}/>))
-              : <p>No Product found</p>
-           ))
-          }
-        </section>
         
+        {isSearching && (
+          <div className="search-info">
+            <p>Search results for: "{searchInput}"</p>
+          </div>
+        )}
+        
+        <section className='product-container'>
+          {error ? (
+            <div className='error'> 
+              <BiSolidError className='error-icon'/>
+              <p className='error-message'>
+                <span>Error: </span>{error}
+              </p>
+            </div>
+          ) : loading ? (
+            <Spinner loading={loading}/>
+          ) : productsToShow && productsToShow.length > 0 ? (
+            productsToShow.map((product, i) => 
+              <ProductCard key={product.id || i} product={product}/>
+            )
+          ) : (
+            <div className="error">
+              <p className="error-message">
+                {isSearching ? 'No search results found' : 
+                 isFiltered ? 'No filtered items found' : 
+                 'No products found'}
+              </p>
+            </div>
+          )}
+        </section>
       </section>
       <Footer />
     </>
